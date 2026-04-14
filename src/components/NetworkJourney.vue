@@ -12,68 +12,184 @@ const flowByMode = {
   web: [
     {
       id: 's1',
-      prompt: 'Какой первый шаг у пользователя?',
+      prompt: 'Шаг 1. Что делает человек на своём устройстве?',
       options: [
-        { text: 'Ввести адрес и отправить HTTP-запрос', correct: true },
-        { text: 'Сразу показать готовый ответ без сервера', correct: false, hint: 'Ответ ещё не получен.' },
+        {
+          text: 'Вводит адрес сайта или нажимает ссылку',
+          correct: true,
+        },
+        {
+          text: 'Ждёт, что страница появится сама без действий',
+          correct: false,
+          hint: 'Сначала нужен явный запрос со стороны пользователя.',
+        },
       ],
     },
     {
       id: 's2',
-      prompt: 'Что происходит после отправки запроса?',
+      prompt: 'Шаг 2. Что происходит после нажатия Enter?',
       options: [
-        { text: 'Пакет идёт по сети (WWW) к серверу', correct: true },
-        { text: 'Запрос остаётся только внутри вкладки', correct: false, hint: 'Сервер не увидит запрос.' },
+        {
+          text: 'Браузер формирует и отправляет запрос',
+          correct: true,
+        },
+        {
+          text: 'Браузер ничего не отправляет и просто ждёт',
+          correct: false,
+          hint: 'Без отправки запроса сайт не узнает, что нужно показать.',
+        },
       ],
     },
     {
       id: 's3',
-      prompt: 'Что делает сервер?',
+      prompt: 'Шаг 3. Как запрос попадает к сайту?',
       options: [
-        { text: 'Обрабатывает запрос и готовит данные', correct: true },
-        { text: 'Удаляет сайт и завершает соединение', correct: false, hint: 'Это не рабочий сценарий.' },
+        {
+          text: 'Он идёт по интернету к нужному компьютеру',
+          correct: true,
+        },
+        {
+          text: 'Остаётся внутри вашего устройства',
+          correct: false,
+          hint: 'Тогда до сайта запрос не дойдёт.',
+        },
       ],
     },
     {
       id: 's4',
-      prompt: 'Как заканчивается цикл?',
+      prompt: 'Шаг 4. Что делает компьютер с сайтом?',
       options: [
-        { text: 'Сервер отправляет HTTP-ответ, браузер рендерит', correct: true },
-        { text: 'Ответ не нужен, страница уже знает данные', correct: false, hint: 'Данные должны прийти извне.' },
+        {
+          text: 'Обрабатывает запрос: ищет нужные данные/страницу',
+          correct: true,
+        },
+        {
+          text: 'Игнорирует запрос пользователя',
+          correct: false,
+          hint: 'Если запрос игнорировать, ответ не вернётся.',
+        },
+      ],
+    },
+    {
+      id: 's5',
+      prompt: 'Шаг 5. Что происходит после обработки?',
+      options: [
+        {
+          text: 'Компьютер с сайтом отправляет ответ обратно',
+          correct: true,
+        },
+        {
+          text: 'Ничего не отправляет, процесс завершён',
+          correct: false,
+          hint: 'Нужен обратный путь: без ответа страница не откроется.',
+        },
+      ],
+    },
+    {
+      id: 's6',
+      prompt: 'Шаг 6. Что видит человек в конце?',
+      options: [
+        {
+          text: 'Браузер получает ответ и показывает страницу',
+          correct: true,
+        },
+        {
+          text: 'Экран остаётся пустым, хотя всё прошло успешно',
+          correct: false,
+          hint: 'Цель обмена — показать результат на экране.',
+        },
       ],
     },
   ],
   game: [
     {
       id: 's1',
-      prompt: 'Игрок открывает лобби. Первый шаг клиента?',
+      prompt: 'Шаг 1. Что делает игрок?',
       options: [
-        { text: 'Отправить API-запрос к игровому backend', correct: true },
-        { text: 'Нарисовать случайный список матчей', correct: false, hint: 'Это не реальные данные сервера.' },
+        {
+          text: 'Нажимает кнопку «Обновить список комнат»',
+          correct: true,
+        },
+        {
+          text: 'Ждёт, что список обновится сам',
+          correct: false,
+          hint: 'Сначала нужно действие игрока.',
+        },
       ],
     },
     {
       id: 's2',
-      prompt: 'Что дальше с запросом?',
+      prompt: 'Шаг 2. Что делает игра после нажатия?',
       options: [
-        { text: 'Передать по интернету к серверу', correct: true },
-        { text: 'Оставить только в кэше клиента', correct: false, hint: 'На сервер ничего не уйдёт.' },
+        {
+          text: 'Формирует и отправляет запрос на список комнат',
+          correct: true,
+        },
+        {
+          text: 'Не отправляет ничего',
+          correct: false,
+          hint: 'Без запроса сервер не сможет прислать свежий список.',
+        },
       ],
     },
     {
       id: 's3',
-      prompt: 'Этап сервера?',
+      prompt: 'Шаг 3. Куда идёт этот запрос?',
       options: [
-        { text: 'Проверить сессию и собрать JSON-ответ', correct: true },
-        { text: 'Довериться любому клиенту без проверки', correct: false, hint: 'Риск читов и ошибок.' },
+        {
+          text: 'Через интернет к компьютеру с игрой',
+          correct: true,
+        },
+        {
+          text: 'Остаётся только на телефоне игрока',
+          correct: false,
+          hint: 'Тогда удалённый компьютер ничего не узнает.',
+        },
       ],
     },
     {
       id: 's4',
-      prompt: 'Финал для игрока?',
+      prompt: 'Шаг 4. Что делает компьютер с игрой?',
       options: [
-        { text: 'Вернуть ответ, клиент показывает “Матч найден”', correct: true },
-        { text: 'Ничего не вернуть в UI', correct: false, hint: 'Игрок останется без обратной связи.' },
+        {
+          text: 'Проверяет и подготавливает ответ',
+          correct: true,
+        },
+        {
+          text: 'Случайно отправляет игроку пустые данные',
+          correct: false,
+          hint: 'Сначала нужно корректно обработать запрос.',
+        },
+      ],
+    },
+    {
+      id: 's5',
+      prompt: 'Шаг 5. Что происходит дальше?',
+      options: [
+        {
+          text: 'Компьютер с игрой отправляет ответ обратно',
+          correct: true,
+        },
+        {
+          text: 'Ничего не отправляет',
+          correct: false,
+          hint: 'Игрок ждёт ответ, значит его нужно вернуть.',
+        },
+      ],
+    },
+    {
+      id: 's6',
+      prompt: 'Шаг 6. Что увидит игрок в конце?',
+      options: [
+        {
+          text: 'На экране появится обновлённый список комнат',
+          correct: true,
+        },
+        {
+          text: 'Экран никак не изменится',
+          correct: false,
+          hint: 'Если ответ пришёл, интерфейс должен обновиться.',
+        },
       ],
     },
   ],
@@ -82,25 +198,25 @@ const flowByMode = {
 const copy = computed(() =>
   mode.value === 'web'
     ? {
-        req: 'HTTP-ЗАПРОС',
-        reqSub: 'request',
-        res: 'HTTP-ОТВЕТ',
-        resSub: 'response',
-        bar: 'https://…',
-        www: 'WWW',
-        server: 'ВЕБ-СЕРВЕР',
-        result: 'Hello, World!',
+        reqLine1: 'ЗАПРОС',
+        reqLine2: '«Покажи страницу»',
+        resLine1: 'ОТВЕТ',
+        resLine2: '«Вот страница»',
+        bar: 'школа.пример/…',
+        www: 'ИНТЕРНЕТ',
+        server: 'КОМПЬЮТЕР С САЙТОМ',
+        result: 'Страница готова!',
         time: 'ВРЕМЯ',
       }
     : {
-        req: 'API-ЗАПРОС',
-        reqSub: 'lobby',
-        res: 'JSON-ОТВЕТ',
-        resSub: '200 OK',
-        bar: 'api.game/lobby',
+        reqLine1: 'ЗАПРОС',
+        reqLine2: '«Дай список комнат»',
+        resLine1: 'ОТВЕТ',
+        resLine2: '«Вот список»',
+        bar: 'игра/матчи',
         www: 'ИНТЕРНЕТ',
-        server: 'ИГРОВОЙ СЕРВЕР',
-        result: 'Матч найден!',
+        server: 'КОМПЬЮТЕР С ИГРОЙ',
+        result: 'Список обновлён!',
         time: 'ВРЕМЯ',
       },
 )
@@ -108,6 +224,18 @@ const copy = computed(() =>
 const steps = computed(() => flowByMode[mode.value])
 const currentStep = computed(() => steps.value[phase.value] ?? null)
 const isDone = computed(() => phase.value >= steps.value.length)
+const processLabels = computed(() =>
+  mode.value === 'web'
+    ? ['Ввод адреса', 'Отправка запроса', 'Передача по интернету', 'Обработка на сайте', 'Отправка ответа', 'Показ страницы']
+    : [
+        'Действие игрока',
+        'Отправка запроса',
+        'Передача по интернету',
+        'Обработка в игре',
+        'Отправка ответа',
+        'Обновление экрана',
+      ],
+)
 
 function resetFlow() {
   phase.value = 0
@@ -148,18 +276,23 @@ watch(runMode, resetFlow)
   <div class="nj">
     <div class="nj-toolbar">
       <div class="nj-modes" role="tablist">
-        <button type="button" class="nj-tab" :class="{ on: mode === 'web' }" @click="mode = 'web'">Как в браузере</button>
-        <button type="button" class="nj-tab" :class="{ on: mode === 'game' }" @click="mode = 'game'">Как в игре</button>
+        <button type="button" class="nj-tab" :class="{ on: mode === 'web' }" @click="mode = 'web'">Пример: сайт</button>
+        <button type="button" class="nj-tab" :class="{ on: mode === 'game' }" @click="mode = 'game'">Пример: онлайн‑игра</button>
       </div>
       <div class="nj-modes">
-        <button type="button" class="nj-tab" :class="{ on: runMode === 'choice' }" @click="runMode = 'choice'">Выбор шагов</button>
-        <button type="button" class="nj-tab" :class="{ on: runMode === 'auto' }" @click="runMode = 'auto'">Авто-анимация</button>
+        <button type="button" class="nj-tab" :class="{ on: runMode === 'choice' }" @click="runMode = 'choice'">Собрать сами</button>
+        <button type="button" class="nj-tab" :class="{ on: runMode === 'auto' }" @click="runMode = 'auto'">Показать целиком</button>
       </div>
-      <button v-if="runMode === 'auto'" type="button" class="nj-play" @click="playAuto">▶ Показать путь данных</button>
-      <button v-else type="button" class="nj-play" @click="resetFlow">↺ Сбросить выбор</button>
+      <button v-if="runMode === 'auto'" type="button" class="nj-play" @click="playAuto">▶ Запустить показ</button>
+      <button v-else type="button" class="nj-play" @click="resetFlow">↺ Начать заново</button>
     </div>
 
+    <p v-if="runMode === 'choice'" class="nj-lead">
+      Ответьте на вопрос — на картинке справа зажжётся следующий шаг цепочки.
+    </p>
+
     <div v-if="runMode === 'choice' && currentStep" class="nj-quiz">
+      <p class="nj-step">Шаг {{ phase + 1 }} из {{ steps.length }}</p>
       <p class="nj-q">{{ currentStep.prompt }}</p>
       <div class="nj-opts">
         <button v-for="(opt, idx) in currentStep.options" :key="idx" type="button" class="nj-opt" @click="pickOption(opt)">
@@ -167,7 +300,7 @@ watch(runMode, resetFlow)
         </button>
       </div>
       <p v-if="pickResult && !pickResult.correct" class="nj-bad">✕ {{ pickResult.hint }}</p>
-      <p v-else-if="pickResult && pickResult.correct" class="nj-ok">✓ Верно, добавляю шаг в схему…</p>
+      <p v-else-if="pickResult && pickResult.correct" class="nj-ok">✓ Верно — смотрите обновление на схеме.</p>
     </div>
 
     <div class="nj-board">
@@ -185,38 +318,42 @@ watch(runMode, resetFlow)
         <rect x="72" y="48" width="128" height="72" rx="6" class="nj-sketch-box" :class="{ pulse: phase >= 1 }" />
         <rect x="78" y="54" width="116" height="14" rx="2" class="nj-bar" />
         <text x="86" y="65" class="nj-bar-text">{{ copy.bar }}</text>
-        <text x="100" y="100" class="nj-browser-tag">БРАУЗЕР</text>
+        <text x="88" y="100" class="nj-browser-tag">НАЧАЛО — ВЫ</text>
+        <text x="88" y="114" class="nj-mini-label">ввод и отправка</text>
 
-        <path d="M 200 92 C 248 92, 288 108, 318 128" class="nj-path nj-path-req-len" :class="{ 'nj-path--draw': phase >= 1 }" marker-end="url(#nj-arr)" />
-        <text x="210" y="78" class="nj-path-cap">
-          <tspan>{{ copy.req }}</tspan>
-          <tspan x="210" dy="14" class="nj-path-cap-sub">({{ copy.reqSub }})</tspan>
+        <path d="M 200 92 C 248 92, 288 108, 318 128" class="nj-path nj-path-req-len" :class="{ 'nj-path--draw': phase >= 2 }" marker-end="url(#nj-arr)" />
+        <text x="198" y="78" class="nj-path-cap">
+          <tspan>{{ copy.reqLine1 }}</tspan>
+          <tspan x="198" dy="11" class="nj-path-cap-sub">{{ copy.reqLine2 }}</tspan>
         </text>
-        <circle v-show="phase === 1" :key="'rq-' + animKey" r="7" class="nj-packet">
+        <circle v-show="phase === 2" :key="'rq-' + animKey" r="7" class="nj-packet">
           <animateMotion dur="0.85s" repeatCount="1" fill="freeze" path="M 200 92 C 248 92, 288 108, 318 128" />
         </circle>
 
-        <circle cx="218" cy="208" r="38" class="nj-sketch-box nj-globe" :class="{ pulse: phase >= 2 }" />
+        <circle cx="218" cy="208" r="38" class="nj-sketch-box nj-globe" :class="{ pulse: phase >= 3 }" />
         <ellipse cx="218" cy="208" rx="38" ry="14" class="nj-globe-line" fill="none" />
         <path d="M218 170 Q198 208 218 246 Q238 208 218 170" class="nj-globe-line" fill="none" />
         <text x="188" y="268" class="nj-www">{{ copy.www }}</text>
+        <text x="171" y="282" class="nj-mini-label">передача данных</text>
 
-        <path d="M302 52 Q318 40 332 48 Q348 38 362 50 Q378 44 388 58 Q398 72 388 84 L308 84 Q298 72 302 52 Z" class="nj-cloud" :class="{ pulse: phase >= 2 }" />
-        <rect x="328" y="78" width="44" height="56" rx="4" class="nj-server" :class="{ pulse: phase >= 3 }" />
+        <path d="M302 52 Q318 40 332 48 Q348 38 362 50 Q378 44 388 58 Q398 72 388 84 L308 84 Q298 72 302 52 Z" class="nj-cloud" :class="{ pulse: phase >= 4 }" />
+        <rect x="328" y="78" width="44" height="56" rx="4" class="nj-server" :class="{ pulse: phase >= 4 }" />
         <ellipse cx="350" cy="78" rx="22" ry="6" class="nj-server-top" />
         <line x1="336" y1="96" x2="364" y2="96" class="nj-server-line" />
         <line x1="336" y1="108" x2="364" y2="108" class="nj-server-line" />
         <text x="308" y="152" class="nj-server-label">{{ copy.server }}</text>
+        <text x="306" y="165" class="nj-mini-label">обработка запроса</text>
 
-        <path d="M 338 148 C 300 220, 220 300, 140 368" class="nj-path nj-path-res-len" :class="{ 'nj-path--draw': phase >= 4 }" marker-end="url(#nj-arr)" />
-        <text x="248" y="232" class="nj-path-cap">
-          <tspan>{{ copy.res }}</tspan>
-          <tspan x="248" dy="14" class="nj-path-cap-sub">({{ copy.resSub }})</tspan>
+        <path d="M 338 148 C 300 220, 220 300, 140 368" class="nj-path nj-path-res-len" :class="{ 'nj-path--draw': phase >= 5 }" marker-end="url(#nj-arr)" />
+        <text x="236" y="228" class="nj-path-cap">
+          <tspan>{{ copy.resLine1 }}</tspan>
+          <tspan x="236" dy="11" class="nj-path-cap-sub">{{ copy.resLine2 }}</tspan>
         </text>
-        <circle v-show="phase === 4" :key="'rs-' + animKey" r="7" class="nj-packet nj-packet-amber">
+        <circle v-show="phase === 5" :key="'rs-' + animKey" r="7" class="nj-packet nj-packet-amber">
           <animateMotion dur="0.95s" repeatCount="1" fill="freeze" path="M 338 148 C 300 220, 220 300, 140 368" />
         </circle>
 
+        <text x="96" y="364" class="nj-browser-tag">КОНЕЦ — ОТВЕТ</text>
         <rect x="72" y="372" width="148" height="96" rx="6" class="nj-sketch-box" :class="{ pulse: isDone }" />
         <rect x="78" y="378" width="136" height="14" rx="2" class="nj-bar" />
         <text x="86" y="389" class="nj-bar-text">{{ copy.bar }}</text>
@@ -224,9 +361,20 @@ watch(runMode, resetFlow)
         <text x="92" y="434" class="nj-result-text">{{ isDone ? copy.result : '...' }}</text>
       </svg>
 
-      <p v-if="isDone" class="nj-caption">Цепочка построена: запрос ушёл и ответ вернулся.</p>
+      <p v-if="isDone" class="nj-caption">Готово: просьба ушла по интернету, ответ вернулся на ваш экран.</p>
+      <div class="nj-process">
+        <div
+          v-for="(label, idx) in processLabels"
+          :key="label"
+          class="nj-process-item"
+          :class="{ done: phase > idx, active: phase === idx }"
+        >
+          <span class="nj-process-n">{{ idx + 1 }}</span>
+          <span class="nj-process-t">{{ label }}</span>
+        </div>
+      </div>
       <div v-if="wrongSteps.length" class="nj-errors">
-        <p class="nj-errors-title">Ошибочные выборы</p>
+        <p class="nj-errors-title">Не подошло (можно перечитать и попробовать снова)</p>
         <p v-for="(e, i) in wrongSteps" :key="i" class="nj-error-item">✕ {{ e }}</p>
       </div>
     </div>
@@ -235,6 +383,8 @@ watch(runMode, resetFlow)
 
 <style scoped>
 .nj { display: flex; flex-direction: column; gap: 0.75rem; min-height: 0; }
+.nj-lead { margin: 0; font-size: 0.82rem; color: #475569; line-height: 1.45; }
+.nj-step { margin: 0 0 0.35rem; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; color: #64748b; text-transform: uppercase; }
 .nj-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.65rem; justify-content: space-between; }
 .nj-modes { display: flex; gap: 0.35rem; }
 .nj-tab { padding: 0.4rem 0.85rem; border-radius: 999px; border: 2px dashed #94a3b8; background: #fff; font-size: 0.78rem; font-weight: 700; color: #64748b; }
@@ -255,12 +405,13 @@ watch(runMode, resetFlow)
 .nj-bar { fill: #e2e8f0; stroke: #1e293b; stroke-width: 1.5; }
 .nj-bar-text { font-size: 8px; font-family: ui-monospace, monospace; fill: #334155; }
 .nj-browser-tag { font-size: 10px; font-weight: 800; fill: #475569; }
+.nj-mini-label { font-size: 8px; font-weight: 700; fill: #64748b; }
 .nj-path { fill: none; stroke: #1e293b; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
 .nj-path-req-len { stroke-dasharray: 180; stroke-dashoffset: 180; }
 .nj-path-res-len { stroke-dasharray: 300; stroke-dashoffset: 300; }
 .nj-path--draw { stroke-dashoffset: 0; transition: stroke-dashoffset 0.85s ease; }
-.nj-path-cap { font-size: 9px; font-weight: 800; fill: #0f172a; }
-.nj-path-cap-sub { font-size: 7px; font-weight: 700; fill: #475569; }
+.nj-path-cap { font-size: 10px; font-weight: 800; fill: #0f172a; }
+.nj-path-cap-sub { font-size: 8px; font-weight: 700; fill: #475569; }
 .nj-packet { fill: #5b8cff; stroke: #1e40af; stroke-width: 1.5; }
 .nj-packet-amber { fill: #fbbf24; stroke: #b45309; }
 .nj-globe { fill: #dbeafe; }
@@ -276,6 +427,14 @@ watch(runMode, resetFlow)
 .pulse { animation: nj-pulse 0.6s ease-out; }
 @keyframes nj-pulse { 0% { filter: drop-shadow(0 0 0 transparent);} 50% { filter: drop-shadow(0 0 9px rgba(91, 140, 255, 0.6));} 100% { filter: drop-shadow(0 0 0 transparent);} }
 .nj-caption { margin: 0.35rem 0 0; font-size: 0.82rem; color: #475569; text-align: center; }
+.nj-process { margin-top: 0.5rem; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.35rem; }
+.nj-process-item { display: flex; align-items: center; gap: 0.4rem; border: 1px solid #cbd5e1; border-radius: 10px; padding: 0.35rem 0.45rem; background: #fff; }
+.nj-process-item.done { border-color: #86efac; background: #f0fdf4; }
+.nj-process-item.active { border-color: #93c5fd; background: #eff6ff; box-shadow: 0 0 0 1px #93c5fd inset; }
+.nj-process-n { width: 1.2rem; height: 1.2rem; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72rem; font-weight: 800; color: #1e293b; background: #e2e8f0; }
+.nj-process-item.done .nj-process-n { background: #bbf7d0; color: #166534; }
+.nj-process-item.active .nj-process-n { background: #bfdbfe; color: #1e40af; }
+.nj-process-t { font-size: 0.75rem; color: #334155; line-height: 1.2; }
 .nj-errors { margin-top: 0.45rem; border-top: 1px dashed #cbd5e1; padding-top: 0.45rem; }
 .nj-errors-title { margin: 0 0 0.25rem; font-size: 0.78rem; font-weight: 800; color: #334155; }
 .nj-error-item { margin: 0.1rem 0; font-size: 0.76rem; color: #b91c1c; }
