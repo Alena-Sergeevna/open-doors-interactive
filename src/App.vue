@@ -3,6 +3,15 @@ import { ref, computed, watch } from 'vue'
 import FlowchartPanel from './components/FlowchartPanel.vue'
 import FlowchartCanvas from './components/FlowchartCanvas.vue'
 import NetworkJourney from './components/NetworkJourney.vue'
+import UserPathLifecycle from './components/UserPathLifecycle.vue'
+import DesignStudioPreview from './components/DesignStudioPreview.vue'
+import ErDomainExplorer from './components/ErDomainExplorer.vue'
+import ServerBackendLab from './components/ServerBackendLab.vue'
+import ClientDataLab from './components/ClientDataLab.vue'
+import DeployLab from './components/DeployLab.vue'
+import TestingLab from './components/TestingLab.vue'
+import { DESIGN_PALETTES, DESIGN_FONTS, evaluatePalette, formatRatio } from './data/designPalettes.js'
+import { DOMAIN_OBSERVATIONS } from './data/erDomain.js'
 import { useAlgorithmFlowchart } from './composables/useAlgorithmFlowchart.js'
 
 /** Единая тема: как из уровней складывается игровое веб/мобильное приложение */
@@ -208,6 +217,7 @@ const PATH_SCENARIOS = {
       { id: 'score', text: 'Сохранить счёт / рекорд' },
     ],
     order: ['open', 'mode', 'play', 'score'],
+    transitions: ['вход в приложение', 'навигация к контенту', 'игровая сессия', 'фиксация результата'],
   },
   pvp: {
     id: 'pvp',
@@ -219,6 +229,7 @@ const PATH_SCENARIOS = {
       { id: 'reward', text: 'Получить награду и рейтинг' },
     ],
     order: ['lobby', 'queue', 'match', 'reward'],
+    transitions: ['вход в лобби', 'построение пары', 'раунд PvP', 'рейтинг и награда'],
   },
   rpg: {
     id: 'rpg',
@@ -230,6 +241,7 @@ const PATH_SCENARIOS = {
       { id: 'loot', text: 'Забрать награду в инвентарь' },
     ],
     order: ['npc', 'quest', 'fight', 'loot'],
+    transitions: ['инициация сюжета', 'принятие задачи', 'исполнение', 'награда в инвентарь'],
   },
 }
 
@@ -242,10 +254,10 @@ const STAGES = [
     lead: 'За несколько минут вы пройдёте путь разработки игрового приложения — от логики уровня до сети, данных и выкладки в магазины. Всё можно проходить самостоятельно на экране.',
     bullets: [
       'Игры — это и интерфейс, и сеть, и сервер, который хранит прогресс и честность матчей.',
-      'Те же идеи: алгоритмы, клиент‑сервер, БД, проектирование сценариев и релиз.',
-      'Ниже — восемь уровней с примерами и мини‑задачами.',
+      'Те же идеи: алгоритмы, клиент‑сервер, БД, проектирование сценариев, проверки перед релизом и выкладка.',
+      'Ниже — 9 уровней с примерами и мини‑задачами.',
     ],
-    cta: 'Начать 8 уровней',
+    cta: 'Начать 9 уровней',
   },
   {
     id: 'l1',
@@ -305,14 +317,18 @@ const STAGES = [
     level: 4,
     emoji: '🎨',
     title: 'Дизайн',
-    goal: 'UX / UI',
+    goal: 'Контраст и токены UI',
     context: [
-      'Один и тот же функционал можно сделать понятным или запутанным.',
-      'Хороший интерфейс снижает ошибки и ускоряет задачи.',
+      'Цвета и шрифты — не «украшение», а читаемость: контраст текста и кнопок к фону, иерархия подписей.',
+      'Для магазина и настроек важны измеримые критерии (в т.ч. WCAG), а не только вкус.',
     ],
-    examples: ['«Купить скин» крупной кнопкой vs мелкая ссылка', 'HUD с понятными иконками vs перегруз', 'Ошибка сети рядом с кнопкой «Повторить» vs тихий сбой'],
-    takeaway: 'UX/UI в игре снижает фрустрацию: ясные действия, обратная связь, доступность.',
-    interactive: 'uxCompare',
+    examples: [
+      'Палитра с низким контрастом: цена и CTA «теряются» на фоне.',
+      'Системный гротеск для форм; display‑шрифты — осторожно в длинном тексте.',
+      'Проверка пары «текст / фон» перед релизом — часть UI‑процесса.',
+    ],
+    takeaway: 'Хороший UI в игре измеряется доступностью и ясностью действий, а не «самой модной» палитрой.',
+    interactive: 'uxStudio',
   },
   {
     id: 'l5',
@@ -320,33 +336,19 @@ const STAGES = [
     level: 5,
     emoji: '🗄️',
     title: 'Базы данных',
-    goal: 'Хранение данных',
-    context: ['Профили, инвентарь, рейтинги и облачные сейвы хранят структурированно в БД, а не «как получится» в файлах.'],
-    examples: ['Аккаунты и привязка к платформам', 'Прогресс квестов и достижения', 'История матчей и античит‑флаги'],
-    takeaway: 'БД — память игры между сессиями и между устройствами.',
-    interactive: 'quiz',
-    quiz: [
-      {
-        q: 'Где надёжнее хранить пароли пользователей?',
-        opts: [
-          { t: 'В открытом виде в общем конфиге клиента игры', c: false },
-          { t: 'В БД в зашифрованном / хешированном виде', c: true },
-          { t: 'Только в cookies всех посетителей', c: false },
-        ],
-        ok: 'Пароли хранят как хеши; открытый текст — огромный риск.',
-        bad: 'Пароли нельзя хранить открыто и светить всем подряд.',
-      },
-      {
-        q: 'Зачем хранить в БД историю матчей и покупок внутри игры?',
-        opts: [
-          { t: 'Для поддержки, аналитики баланса и разборов спорных ситуаций', c: true },
-          { t: 'Только чтобы занять место на диске', c: false },
-          { t: 'Чтобы случайно стереть прогресс всех игроков', c: false },
-        ],
-        ok: 'Записи связывают аккаунт с действиями и помогают честной экономике и поддержке.',
-        bad: 'История — осмысленные данные для игрока, сервера и команды продукта.',
-      },
+    goal: 'ER‑модель по предметной области',
+    context: [
+      'Данные игры между сессиями живут в таблицах со связями: сначала описывают предметную область, потом проектируют сущности и кардинальности.',
+      'Вы — исследователи домена: читаете заметки с поля и решаете, какие объекты и связи нужны, чтобы честно хранить прогресс, инвентарь и экономику.',
     ],
+    examples: [
+      'Заметка «прогресс привязан к аккаунту» → сущность игрока и отдельные сущности для персонажей и вещей.',
+      '«Предметы в инвентаре со стаками» → связь инвентаря с каталогом предметов и строки состава.',
+      '«Покупки и матчи оставляют след» → расширение модели транзакциями и историей матчей.',
+    ],
+    takeaway:
+      'БД — не «ящик для файлов», а явная модель: сущности и связи отражают договорённости предметной области и то, что реально нужно хранить.',
+    interactive: 'erDomain',
   },
   {
     id: 'l6',
@@ -354,33 +356,19 @@ const STAGES = [
     level: 6,
     emoji: '⚙️',
     title: 'Сервер',
-    goal: 'Бизнес‑логика и правила',
-    context: ['Сервер решает исход боя, выдаёт лут, проверяет покупки и очередь матчмейкинга — то, что нельзя оставить только на клиенте.'],
-    examples: ['Матчмейкинг по рейтингу и пингу', 'Валидация валютной транзакции', 'Проверка токена сессии и бана'],
-    takeaway: 'Игровой backend — место, где закрепляются правила и честность.',
-    interactive: 'quiz',
-    quiz: [
-      {
-        q: 'Почему нельзя доверять только клиенту при покупке премиум‑валюты?',
-        opts: [
-          { t: 'Запрос можно подделать; итог должен подтвердить сервер и платёжный шлюз', c: true },
-          { t: 'Клиент всегда честнее сервера', c: false },
-          { t: 'HTTP нельзя отправить из игры', c: false },
-        ],
-        ok: 'Деньги и награды проверяют на сервере — иначе обойдут экономику.',
-        bad: 'Клиентский код виден и изменяем; сервер — контрольная точка.',
-      },
-      {
-        q: 'Что делает сервер при запросе «забрать награду за сезон»?',
-        opts: [
-          { t: 'Проверяет условия, античит, лимиты и записывает выдачу в БД', c: true },
-          { t: 'Только меняет анимацию на экране', c: false },
-          { t: 'Удаляет все сохранения', c: false },
-        ],
-        ok: 'Сервер валидирует право на награду и фиксирует факт выдачи.',
-        bad: 'Реальное начисление — на стороне сервера и БД.',
-      },
+    goal: 'Код, база и ответ игре',
+    context: [
+      'Сервер — программа на удалённой машине: она решает, можно ли выдать награду, и лезет в базу за фактами. То, что написано в приложении на телефоне, игрок может попытаться обойти — поэтому важные проверки делают здесь.',
+      'Экран и кнопки — на следующем уровне («Клиент»). Здесь только цепочка: кто запросил → что ответила база → что отправить обратно.',
     ],
+    examples: [
+      'Профиль: узнать игрока по входу, прочитать одну строку из таблицы, вернуть короткий JSON.',
+      'Награда: снова узнать игрока, записать в базу «уже выдали», вернуть JSON с призом и балансом.',
+      'Так же проверяют покупки и матчи — иначе читеры и ошибки ломают игру.',
+    ],
+    takeaway:
+      'Сервер — «умный посредник» между игрой и базой: он не верит телефону на слово и возвращает только проверенный результат.',
+    interactive: 'serverLab',
   },
   {
     id: 'l7',
@@ -388,67 +376,61 @@ const STAGES = [
     level: 7,
     emoji: '🖥️',
     title: 'Клиент',
-    goal: 'Интерфейс',
-    context: ['Клиент — то, что видит игрок: меню, HUD, лаунчер, анимации, ввод с геймпада или тача.'],
-    examples: ['Адаптив UI под разные разрешения', 'Экран логина и привязка аккаунта', 'Предзагрузка ассетов и офлайн‑режим где возможно'],
-    takeaway: 'Клиент переводит состояние игры и ответы сервера в картинку и управление.',
-    interactive: 'quiz',
-    quiz: [
-      {
-        q: 'Что из этого относится к клиенту игры?',
-        opts: [
-          { t: 'Отрисовка HUD и экрана «Победа / Поражение»', c: true },
-          { t: 'Физический сервер матчмейкинга в дата‑центре', c: false },
-          { t: 'Ночной бэкап БД прогресса', c: false },
-        ],
-        ok: 'Визуал и ввод в приложении или браузере — зона клиента.',
-        bad: 'Железо и фоновые задачи сервера — не клиентский UI.',
-      },
-      {
-        q: 'Зачем клиенту валидировать форму, если есть сервер?',
-        opts: [
-          { t: 'Быстрее подсказать ошибку без лишнего запроса', c: true },
-          { t: 'Чтобы обойти сервер полностью', c: false },
-          { t: 'Чтобы не показывать кнопку «Отправить»', c: false },
-        ],
-        ok: 'Клиентский ввод улучшает UX; сервер всё равно проверяет окончательно.',
-        bad: 'Двойная проверка: удобство на клиенте, безопасность на сервере.',
-      },
+    goal: 'Показать на экране то, что прислал сервер',
+    context: [
+      'Дизайн — про внешний вид. Но если не дождаться ответа или перепутать имя поля в данных, игрок увидит пустоту или неправду.',
+      'Сервер уже прислал JSON (прошлый уровень). Задача клиента — честно прочитать этот текст и вывести цифры и слова как есть.',
     ],
+    examples: [
+      'Профиль: сначала «загрузка», потом ник из поля nickname, опыт из xp.',
+      'Награда: сначала проверить status, потом баланс из balance, название приза из loot.',
+      'Проверка в форме на телефоне удобна, но главное решение всё равно на сервере.',
+    ],
+    takeaway:
+      'Сначала правильно принять данные от сервера, потом можно красиво их обернуть в интерфейс.',
+    interactive: 'clientLab',
   },
   {
     id: 'l8',
     kind: 'level',
     level: 8,
+    emoji: '🧪',
+    title: 'Тестирование',
+    goal: 'Что проверяют перед развёртыванием',
+    context: [
+      'Развёртывание публикует ту версию, которая уже собрана. Без проверок в сеть уезжают ошибки в логике, интерфейсе и данных — их потом видят реальные игроки.',
+      'Обычно смотрят по отдельности: ведёт ли себя функционал по правилам, понятен ли интерфейс, выдерживает ли код правки и не сломалось ли старое после изменений.',
+    ],
+    examples: [
+      'Функционал: ключевые сценарии и нестандартные ситуации, не только «счастливый путь».',
+      'Интерфейс: кнопки, тексты ошибок, удобство на разных размерах экрана.',
+      'Код: ревью и автоматические прогоны, повторный прогон критичных сценариев перед выкладкой.',
+    ],
+    takeaway:
+      'Тестирование — обязательный этап перед релизом: так меньше сюрпризов у игроков после публикации.',
+    interactive: 'testLab',
+  },
+  {
+    id: 'l9',
+    kind: 'level',
+    level: 9,
     emoji: '🚀',
     title: 'Развёртывание',
-    goal: 'Доставка игры игрокам',
-    context: ['Сборка на машине разработчика ещё не релиз: клиенты качают патчи из стора или CDN, серверы обновляют по конвейеру.'],
-    examples: ['Сборка под PC / мобильные / веб', 'Выкладка hotfix без долгого простоя', 'Мониторинг онлайна и откат билда'],
-    takeaway: 'Релиз игры — это конвейер, магазины приложений и стабильные сервера.',
-    interactive: 'quiz',
-    quiz: [
-      {
-        q: 'Что значит «задеплоить» приложение?',
-        opts: [
-          { t: 'Выкатить рабочую версию на сервер / в магазин приложений', c: true },
-          { t: 'Удалить репозиторий с GitHub', c: false },
-          { t: 'Нарисовать только макет в Figma', c: false },
-        ],
-        ok: 'Деплой — публикация собранной версии для пользователей.',
-        bad: 'Деплой связан с выкладкой и запуском, а не с удалением кода.',
-      },
-      {
-        q: 'Зачем staging‑среда (копия продакшена)?',
-        opts: [
-          { t: 'Проверить сборку и сценарии до боевого запуска', c: true },
-          { t: 'Хранить только личные фото разработчика', c: false },
-          { t: 'Чтобы пользователи не могли зайти никогда', c: false },
-        ],
-        ok: 'Промежуточное окружение снижает риск сломать прод.',
-        bad: 'Staging — для проверки перед продакшеном.',
-      },
+    goal: 'Как игра доходит до людей в интернете',
+    context: [
+      'После проверок имеет смысл выкладывать сборку: иначе исправления придётся делать уже «в бою» у тысяч установок.',
+      'У себя на компьютере можно собрать и поиграть — но друзья сами не увидят ваш файл, пока вы не выложите игру в сеть.',
+      'Хостинг — это когда сборку держат на чужом компьютере в датацентре, который всегда в интернете и отдаёт файлы игрокам.',
+      'Обычно код хранят вместе в Git (например на GitHub), а после отправки туда программа-«робот» на хостинге сама собирает и выкладывает версию — без ручного копирования каждый раз.',
     ],
+    examples: [
+      'Флешка и папка на рабочем столе — не то же самое, что «игра в интернете».',
+      'Git — одно общее место для кода команды; в блоке «Релиз» показаны примеры команд в консоли.',
+      'Хостинг + автовыкладка: игроки качают с постоянного адреса, а обновление подставляется само после git push.',
+    ],
+    takeaway:
+      'Коротко: у себя пробуете → общий Git → хостинг (где лежит игра в сети) → автовыкладка (робот обновляет после Git).',
+    interactive: 'deployLab',
   },
   {
     id: 'finale',
@@ -456,14 +438,17 @@ const STAGES = [
     emoji: '✨',
     title: 'Финал',
     lines: [
-      'Вы прошли цепочку: логика уровня и сейва, сеть и матчмейкинг, путь игрока, интерфейс, БД, сервер и релиз.',
-      'Разработчик игры работает с алгоритмами, UX, клиентом, backend и доставкой патчей — всё это связано.',
+      'Вы прошли цепочку: логика уровня и сейва, сеть и матчмейкинг, путь игрока, дизайн, БД, сервер, клиент, проверки перед релизом и выкладка игры в интернет.',
+      'Разработчик игры работает с алгоритмами, UX, клиентом, backend, тестами и доставкой патчей — всё это связано.',
     ],
     question: 'Если хочется строить игровые и прикладные системы целиком — вам сюда:',
     specialty: '09.02.11',
     specialtyName: 'Разработка и управление программным обеспечением',
   },
 ]
+
+/** Всего игровых уровней (без вступления и финала) */
+const TOTAL_LEVELS = 9
 
 const stageIndex = ref(0)
 const stage = computed(() => STAGES[stageIndex.value])
@@ -476,14 +461,14 @@ const fcApi = useAlgorithmFlowchart(flowchartScenario)
 const completedLevels = computed(() => {
   const s = stage.value
   if (s.kind === 'level') return s.level
-  if (s.kind === 'finale') return 8
+  if (s.kind === 'finale') return TOTAL_LEVELS
   return 0
 })
 
 const milestone = computed(() => {
   if (stage.value.kind !== 'level') return null
-  if (stage.value.level === 4) return 'Половина уровней — отличный темп!'
-  return `Уровень ${stage.value.level} из 8`
+  if (stage.value.level === 5) return 'Половина уровней — отличный темп!'
+  return `Уровень ${stage.value.level} из ${TOTAL_LEVELS}`
 })
 
 /* Flowchart scenario tab */
@@ -524,11 +509,82 @@ function pickPath(item) {
   pathPicked.value = [...pathPicked.value, item]
 }
 
-/* L4 UX */
-const uxPairIndex = ref(0)
-const uxChoice = ref(null)
+/* L4 дизайн: расстановка блоков слева; палитра + шрифт + проверка справа */
+const DESIGN_BLOCKS_CANON = ['kicker', 'title', 'desc', 'row']
+const DESIGN_BLOCK_LABELS = {
+  kicker: 'Контекст магазина',
+  title: 'Название набора',
+  desc: 'Описание состава',
+  row: 'Цена и кнопка',
+}
 
-/* Quiz L5–L8 */
+const designPaletteId = ref(DESIGN_PALETTES[0].id)
+const designFontId = ref(DESIGN_FONTS[0].id)
+const designFeedback = ref(null)
+const designBlockOrder = ref([...DESIGN_BLOCKS_CANON])
+
+function designOrderScrambled() {
+  let o = shuffle([...DESIGN_BLOCKS_CANON])
+  while (o.join() === DESIGN_BLOCKS_CANON.join()) {
+    o = shuffle([...DESIGN_BLOCKS_CANON])
+  }
+  return o
+}
+
+const activeDesignPalette = computed(
+  () => DESIGN_PALETTES.find((p) => p.id === designPaletteId.value) ?? DESIGN_PALETTES[0],
+)
+const activeDesignFont = computed(
+  () => DESIGN_FONTS.find((f) => f.id === designFontId.value) ?? DESIGN_FONTS[0],
+)
+
+function runDesignCheck() {
+  const pal = evaluatePalette(activeDesignPalette.value, activeDesignFont.value)
+  const layoutOk = designBlockOrder.value.join() === DESIGN_BLOCKS_CANON.join()
+  const issues = [...pal.issues]
+  if (!layoutOk) {
+    issues.push(
+      'Расстановка: логичная цепочка — контекст магазина → название → описание → в конце цена и действие. Иначе игрок видит цену до того, что покупает.',
+    )
+  }
+  const ok = pal.ok && layoutOk
+  designFeedback.value = {
+    ok,
+    ratios: pal.ratios,
+    issues,
+    okMessage: pal.okMessage,
+    layoutOk,
+    paletteOk: pal.ok,
+  }
+}
+
+function resetDesignStudio() {
+  designPaletteId.value = DESIGN_PALETTES[0].id
+  designFontId.value = DESIGN_FONTS[0].id
+  designFeedback.value = null
+  designBlockOrder.value = designOrderScrambled()
+}
+
+function moveDesignBlock(index, delta) {
+  const j = index + delta
+  if (j < 0 || j >= designBlockOrder.value.length) return
+  const next = [...designBlockOrder.value]
+  ;[next[index], next[j]] = [next[j], next[index]]
+  designBlockOrder.value = next
+  designFeedback.value = null
+}
+
+function selectDesignPalette(p) {
+  designPaletteId.value = p.id
+  designFeedback.value = null
+}
+
+function selectDesignFont(f) {
+  designFontId.value = f.id
+  designFeedback.value = null
+}
+
+/* Квиз на уровнях не используется (оставлен шаблон на будущее) */
 const quizPicked = ref({})
 
 function quizKey(qIndex) {
@@ -545,14 +601,9 @@ function pickQuiz(qIndex, opt, item) {
 }
 
 watch(stageIndex, (i) => {
-  uxChoice.value = null
-  uxPairIndex.value = 0
   const id = STAGES[i]?.id
   if (id === 'l3') rebuildPathShuffle()
-})
-
-watch(uxPairIndex, () => {
-  uxChoice.value = null
+  if (id === 'l4') resetDesignStudio()
 })
 
 watch(pathScenarioKey, () => rebuildPathShuffle())
@@ -577,8 +628,19 @@ const showAppPreview = ref(false)
       </div>
       <div v-if="stage.kind !== 'intro' && stage.kind !== 'finale'" class="progress-wrap">
         <div class="progress-label">Прогресс</div>
-        <div class="progress-bar" role="progressbar" :aria-valuenow="completedLevels" aria-valuemin="0" aria-valuemax="8">
-          <div v-for="n in 8" :key="n" class="progress-seg" :class="{ filled: n <= completedLevels }" />
+        <div
+          class="progress-bar"
+          role="progressbar"
+          :aria-valuenow="completedLevels"
+          aria-valuemin="0"
+          :aria-valuemax="TOTAL_LEVELS"
+        >
+          <div
+            v-for="n in TOTAL_LEVELS"
+            :key="n"
+            class="progress-seg"
+            :class="{ filled: n <= completedLevels }"
+          />
         </div>
       </div>
     </header>
@@ -596,7 +658,7 @@ const showAppPreview = ref(false)
               <template v-if="stage.kind === 'intro'">
                 <div class="hero-emoji">{{ stage.emoji }}</div>
                 <h1 class="h1 h1-left">Собери игровое приложение</h1>
-                <p class="tag tag-left">8 уровней · слева задание, справа результат</p>
+                <p class="tag tag-left">{{ TOTAL_LEVELS }} уровней · слева задание, справа результат</p>
                 <p class="lead">{{ stage.lead }}</p>
                 <ul class="q-list">
                   <li v-for="(b, i) in stage.bullets" :key="i">{{ b }}</li>
@@ -606,7 +668,7 @@ const showAppPreview = ref(false)
 
               <template v-else-if="stage.kind === 'level'">
                 <div class="level-head">
-                  <span class="level-badge">Уровень {{ stage.level }} / 8</span>
+                  <span class="level-badge">Уровень {{ stage.level }} / {{ TOTAL_LEVELS }}</span>
                   <span class="hero-emoji sm">{{ stage.emoji }}</span>
                   <h1 class="h1 h1-left">{{ stage.title }}</h1>
                   <p class="goal">Цель: {{ stage.goal }}</p>
@@ -654,7 +716,7 @@ const showAppPreview = ref(false)
                 </div>
 
                 <div v-else-if="stage.interactive === 'userPath'" class="interactive">
-                  <h3 class="subh">Порядок шагов</h3>
+                  <h3 class="subh">Диаграмма жизненного цикла</h3>
                   <div class="scenario-tabs">
                     <button
                       v-for="key in Object.keys(PATH_SCENARIOS)"
@@ -667,7 +729,10 @@ const showAppPreview = ref(false)
                       {{ PATH_SCENARIOS[key].title }}
                     </button>
                   </div>
-                  <p class="hint">Нажимайте карточки по порядку. Цепочка отображается справа.</p>
+                  <p class="hint">
+                    Соберите типичный цикл игрока: каждое нажатие добавляет состояние на схему справа — узлы и переходы, как
+                    в нотации жизненного цикла сессии.
+                  </p>
                   <div class="chips">
                     <button
                       v-for="p in pathShuffled"
@@ -685,23 +750,78 @@ const showAppPreview = ref(false)
                   </div>
                 </div>
 
-                <div v-else-if="stage.interactive === 'uxCompare'" class="interactive">
-                  <h3 class="subh">Сравнение интерфейсов</h3>
-                  <div class="ux-dots">
-                    <button
-                      v-for="i in 3"
-                      :key="i"
-                      type="button"
-                      class="ux-dot"
-                      :class="{ on: uxPairIndex === i - 1 }"
-                      :aria-label="'Пример ' + i"
-                      @click="uxPairIndex = i - 1"
-                    />
-                  </div>
-                  <p v-show="uxPairIndex === 0" class="ux-task ux-task-left">Где проще купить скин в магазине?</p>
-                  <p v-show="uxPairIndex === 1" class="ux-task ux-task-left">Где удобнее войти в игровой аккаунт?</p>
-                  <p v-show="uxPairIndex === 2" class="ux-task ux-task-left">Где понятнее графика и звук?</p>
-                  <p class="hint">Макеты справа — нажмите элементы и сравните подсказки.</p>
+                <div v-else-if="stage.interactive === 'uxStudio'" class="interactive design-studio-task">
+                  <h3 class="subh">Соберите интерфейс</h3>
+                  <p class="hint">
+                    Всю работу с макетом выполняйте в <strong>правой панели</strong>: порядок блоков карточки, цветовая
+                    гамма, шрифт и кнопка «Проверить». Учитываются и <strong>контраст</strong> (ориентир WCAG&nbsp;AA), и
+                    <strong>расстановка</strong> секций (от контекста магазина к цене и действию).
+                  </p>
+                  <p class="hint muted sm">Мини‑макет обновляется там же сразу при любых изменениях.</p>
+                </div>
+
+                <div v-else-if="stage.interactive === 'erDomain'" class="interactive">
+                  <h3 class="subh">Заметки с поля</h3>
+                  <p class="hint">
+                    Прочитайте формулировки как у команды продукта: из них следуют сущности (таблицы) и связи
+                    (внешние ключи). Справа соберите чертёж и проверьте, хватает ли базовой цепочки для прогресса и
+                    инвентаря.
+                  </p>
+                  <ul class="examples-list er-obs-list">
+                    <li v-for="n in DOMAIN_OBSERVATIONS" :key="n.id">{{ n.text }}</li>
+                  </ul>
+                  <p class="hint muted sm">
+                    Узлы на схеме открываются по шагам; связи «рисуются» двумя кликами по уже добавленным сущностям — без
+                    готового списка всех рёбер сразу.
+                  </p>
+                </div>
+
+                <div v-else-if="stage.interactive === 'serverLab'" class="interactive">
+                  <h3 class="subh">Зачем отдельный сервер</h3>
+                  <p class="hint">
+                    Приложение на телефоне в основном показывает картинку. А вот «кто это и что ему можно» и «что лежит в
+                    базе» — решает программа на сервере: она не видна игроку, но именно она ходит в базу и шлёт ответ.
+                  </p>
+                  <p class="hint muted sm">
+                    Справа два коротких примера. На каждом шаге выберите вариант, который логично продолжает цепочку; сбоку
+                    появится простыми словами, что сделали с базой и что вернули в игру.
+                  </p>
+                </div>
+
+                <div v-else-if="stage.interactive === 'clientLab'" class="interactive">
+                  <h3 class="subh">Не только дизайн</h3>
+                  <p class="hint">
+                    Картинка без правильных данных бесполезна: нужно взять из ответа сервера те поля, которые там реально
+                    есть, и не показывать экран раньше времени.
+                  </p>
+                  <p class="hint muted sm">
+                    Справа — пример JSON и простые шаги на JavaScript. Выберите верные варианты: мини-экран станет зелёным
+                    и покажет те же значения, что в примере.
+                  </p>
+                </div>
+
+                <div v-else-if="stage.interactive === 'testLab'" class="interactive">
+                  <h3 class="subh">Перед развёртыванием</h3>
+                  <p class="hint">
+                    Выкладка в интернет не исправляет логику и не дописывает интерфейс: она только публикует то, что уже
+                    в сборке. Поэтому сначала прогоняют сценарии, экраны и код.
+                  </p>
+                  <p class="hint muted sm">
+                    Справа — четыре вопроса и цепочка этапов проверки. Верный ответ добавляет фразу в «Запомнили» и
+                    подсвечивает следующий шаг на схеме.
+                  </p>
+                </div>
+
+                <div v-else-if="stage.interactive === 'deployLab'" class="interactive">
+                  <h3 class="subh">Не только «у меня на ПК»</h3>
+                  <p class="hint">
+                    Чтобы другие люди скачали игру, одной сборки на своём компьютере мало: нужен общий проект (часто Git) и
+                    способ выложить обновление в интернет без ручной возни каждый день.
+                  </p>
+                  <p class="hint muted sm">
+                    Справа — вопросы по этапам и цепочка наверху. Ответили верно — загорается следующий этап и короткая
+                    фраза в «Запомнили».
+                  </p>
                 </div>
 
                 <div v-else-if="stage.interactive === 'quiz' && stage.quiz" class="interactive quiz-wrap">
@@ -767,7 +887,21 @@ const showAppPreview = ref(false)
 
           <div class="pane pane-out">
             <div class="pane-out-head">
-              <span class="pane-tab pane-tab-out">Просмотр</span>
+              <span class="pane-tab pane-tab-out">{{
+                stage.kind === 'level' && stage.interactive === 'uxStudio'
+                  ? 'Макет'
+                  : stage.kind === 'level' && stage.interactive === 'erDomain'
+                    ? 'ER‑чертёж'
+                    : stage.kind === 'level' && stage.interactive === 'serverLab'
+                      ? 'Сервер'
+                      : stage.kind === 'level' && stage.interactive === 'clientLab'
+                        ? 'Экран'
+                        : stage.kind === 'level' && stage.interactive === 'testLab'
+                          ? 'Проверки'
+                          : stage.kind === 'level' && stage.interactive === 'deployLab'
+                            ? 'Релиз'
+                            : 'Просмотр'
+              }}</span>
             </div>
             <div class="pane-out-scroll">
               <template v-if="stage.kind === 'intro'">
@@ -787,80 +921,141 @@ const showAppPreview = ref(false)
                 <NetworkJourney v-else-if="stage.interactive === 'network'" />
 
                 <div v-else-if="stage.interactive === 'userPath'" class="preview-path">
-                  <p class="preview-section-title">Цепочка сценария</p>
-                  <div class="order-track order-track-out">
-                    <span v-for="(p, i) in pathPicked" :key="i" class="order-item">{{ i + 1 }}. {{ p.text }}</span>
-                    <span v-if="!pathPicked.length" class="out-muted">Пока пусто — выберите шаги слева</span>
-                  </div>
-                  <p v-if="pathCorrect === true" class="preview-status ok">Верный порядок</p>
-                  <p v-else-if="pathCorrect === false" class="preview-status bad">Порядок можно улучшить</p>
+                  <p class="preview-section-title">Просмотр схемы</p>
+                  <UserPathLifecycle
+                    :picked="pathPicked"
+                    :order="activePathScenario.order"
+                    :transitions="activePathScenario.transitions ?? []"
+                    :complete-ok="pathCorrect === true"
+                    :complete-bad="pathCorrect === false"
+                  />
+                  <p v-if="pathCorrect === true" class="preview-status ok">Совпадает с ожидаемым жизненным циклом</p>
+                  <p v-else-if="pathCorrect === false" class="preview-status bad">Цикл не совпадает с эталоном</p>
                 </div>
 
-                <div v-else-if="stage.interactive === 'uxCompare'" class="preview-ux">
-                  <div v-show="uxPairIndex === 0" class="ux-slide">
-                    <div class="ux-row ux-row-out">
-                      <div class="ux-panel bad">
-                        <span class="ux-label">Вариант А</span>
-                        <div class="fake-ui messy">
-                          <span class="tiny-link">скин</span>
-                          <button type="button" class="btn-tiny" @click="uxChoice = 'a0'">ок</button>
-                        </div>
-                        <p v-if="uxChoice === 'a0'" class="ux-feedback">Неясно, что покупаешь и как оплатить.</p>
-                      </div>
-                      <div class="ux-panel good">
-                        <span class="ux-label">Вариант Б</span>
-                        <div class="fake-ui clean">
-                          <span class="lbl">Набор «Лес» — 299 ₽</span>
-                          <button type="button" class="btn-cta" @click="uxChoice = 'b0'">Купить за 299 ₽</button>
-                        </div>
-                        <p v-if="uxChoice === 'b0'" class="ux-feedback ok">Цена и действие на виду — меньше ошибок.</p>
-                      </div>
-                    </div>
+                <ErDomainExplorer v-else-if="stage.interactive === 'erDomain'" :key="'er-' + stage.id" />
+
+                <ServerBackendLab v-else-if="stage.interactive === 'serverLab'" :key="'srv-' + stage.id" />
+
+                <ClientDataLab v-else-if="stage.interactive === 'clientLab'" :key="'cl-' + stage.id" />
+
+                <TestingLab v-else-if="stage.interactive === 'testLab'" :key="'tl-' + stage.id" />
+
+                <DeployLab v-else-if="stage.interactive === 'deployLab'" :key="'dp-' + stage.id" />
+
+                <div v-else-if="stage.interactive === 'uxStudio'" class="preview-design-tools">
+                  <p class="preview-section-title">Сборка карточки</p>
+                  <p class="design-out-lead">
+                    Ниже — живой макет и все настройки. Порядок блоков, палитра и шрифт сразу отражаются на превью.
+                  </p>
+
+                  <div class="design-preview-panel">
+                    <DesignStudioPreview
+                      :palette="activeDesignPalette"
+                      :font-stack="activeDesignFont.stack"
+                      :feedback="designFeedback"
+                      :block-order="designBlockOrder"
+                    />
                   </div>
-                  <div v-show="uxPairIndex === 1" class="ux-slide">
-                    <div class="ux-row ux-row-out">
-                      <div class="ux-panel bad">
-                        <span class="ux-label">Вариант А</span>
-                        <div class="fake-ui messy login-bad">
-                          <span class="micro">игрок</span>
-                          <span class="micro">ник?</span>
-                          <button type="button" class="btn-micro" @click="uxChoice = 'a1'">?</button>
-                        </div>
-                        <p v-if="uxChoice === 'a1'" class="ux-feedback">Непонятные подписи, нет явной кнопки «Войти».</p>
-                      </div>
-                      <div class="ux-panel good">
-                        <span class="ux-label">Вариант Б</span>
-                        <div class="fake-ui clean login-good">
-                          <label class="lbl">Почта</label>
-                          <div class="fake-input" />
-                          <label class="lbl">Пароль</label>
-                          <div class="fake-input" />
-                          <button type="button" class="btn-cta sm" @click="uxChoice = 'b1'">Войти</button>
-                        </div>
-                        <p v-if="uxChoice === 'b1'" class="ux-feedback ok">Колонка, подписи, явное действие.</p>
-                      </div>
-                    </div>
+
+                  <h4 class="design-subh design-subh-out">Порядок блоков</h4>
+                  <p class="design-micro-hint">↑ ↓ — поменять местами соседние секции.</p>
+                  <ol class="design-stack-list">
+                    <li v-for="(bid, bi) in designBlockOrder" :key="bid" class="design-stack-row">
+                      <span class="design-stack-n">{{ bi + 1 }}</span>
+                      <span class="design-stack-label">{{ DESIGN_BLOCK_LABELS[bid] }}</span>
+                      <span class="design-stack-actions">
+                        <button
+                          type="button"
+                          class="btn ghost design-stack-btn"
+                          :disabled="bi === 0"
+                          aria-label="Выше"
+                          @click="moveDesignBlock(bi, -1)"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          type="button"
+                          class="btn ghost design-stack-btn"
+                          :disabled="bi === designBlockOrder.length - 1"
+                          aria-label="Ниже"
+                          @click="moveDesignBlock(bi, 1)"
+                        >
+                          ↓
+                        </button>
+                      </span>
+                    </li>
+                  </ol>
+
+                  <h4 class="design-subh design-subh-out">Цветовая гамма</h4>
+                  <div class="design-palettes design-palettes-out design-palettes-compact">
+                    <button
+                      v-for="p in DESIGN_PALETTES"
+                      :key="p.id"
+                      type="button"
+                      class="design-palette-btn design-palette-btn-out design-palette-btn-compact"
+                      :class="{ on: designPaletteId === p.id }"
+                      @click="selectDesignPalette(p)"
+                    >
+                      <span class="design-palette-row">
+                        <span class="design-swatches" aria-hidden="true">
+                          <span class="design-swatch design-swatch-sm" :style="{ background: p.bg }" />
+                          <span class="design-swatch design-swatch-sm" :style="{ background: p.surface }" />
+                          <span class="design-swatch design-swatch-sm" :style="{ background: p.text }" />
+                          <span class="design-swatch design-swatch-sm" :style="{ background: p.primary }" />
+                        </span>
+                        <span class="design-palette-text">
+                          <span class="design-palette-name">{{ p.name }}</span>
+                          <span class="design-palette-hint">{{ p.hint }}</span>
+                        </span>
+                      </span>
+                    </button>
                   </div>
-                  <div v-show="uxPairIndex === 2" class="ux-slide">
-                    <div class="ux-row ux-row-out">
-                      <div class="ux-panel bad">
-                        <span class="ux-label">Вариант А</span>
-                        <div class="fake-ui messy settings-bad">
-                          <span class="nano">fpsзвукгаммаязыксенситивностьполноэкран</span>
-                        </div>
-                        <p v-if="uxChoice === 'a2'" class="ux-feedback">Параметры слиплись — не найти громкость или FPS.</p>
-                        <button type="button" class="btn-tiny" @click="uxChoice = 'a2'">Открыть</button>
-                      </div>
-                      <div class="ux-panel good">
-                        <span class="ux-label">Вариант Б</span>
-                        <div class="fake-ui clean settings-good">
-                          <div class="set-row"><span class="set-h">Графика</span><span class="set-d">Качество, FPS‑лимит</span></div>
-                          <div class="set-row"><span class="set-h">Звук</span><span class="set-d">Музыка, эффекты, голос</span></div>
-                        </div>
-                        <p v-if="uxChoice === 'b2'" class="ux-feedback ok">Секции с заголовками — быстрее найти нужный ползунок.</p>
-                        <button type="button" class="btn-cta sm" @click="uxChoice = 'b2'">Сохранить</button>
-                      </div>
-                    </div>
+
+                  <h4 class="design-subh design-subh-out">Шрифт</h4>
+                  <div class="design-fonts design-fonts-out design-fonts-compact">
+                    <button
+                      v-for="f in DESIGN_FONTS"
+                      :key="f.id"
+                      type="button"
+                      class="design-font-btn design-font-btn-out design-font-btn-compact"
+                      :class="{ on: designFontId === f.id }"
+                      @click="selectDesignFont(f)"
+                    >
+                      <span class="design-font-name">{{ f.name }}</span>
+                      <span class="design-font-hint">{{ f.hint }}</span>
+                    </button>
+                  </div>
+
+                  <div class="row design-tools-actions">
+                    <button type="button" class="btn primary" @click="runDesignCheck">Проверить</button>
+                    <button type="button" class="btn ghost" @click="resetDesignStudio">Сбросить всё</button>
+                  </div>
+
+                  <div v-if="designFeedback" class="design-feedback design-feedback-out" :class="designFeedback.ok ? 'ok' : 'bad'">
+                    <template v-if="designFeedback.ok">
+                      <p class="design-fb-title">Интерфейс собран корректно</p>
+                      <p class="design-fb-text">
+                        Порядок блоков — как у типичной карточки товара. {{ designFeedback.okMessage }}
+                      </p>
+                      <ul class="design-ratios">
+                        <li>Текст на карточке: {{ formatRatio(designFeedback.ratios.textOnCard) }}</li>
+                        <li>Второстепенный текст: {{ formatRatio(designFeedback.ratios.mutedOnCard) }}</li>
+                        <li>Текст на кнопке: {{ formatRatio(designFeedback.ratios.btn) }}</li>
+                      </ul>
+                    </template>
+                    <template v-else>
+                      <p class="design-fb-title">Нужны правки</p>
+                      <ul class="design-issues">
+                        <li v-for="(issue, di) in designFeedback.issues" :key="di">{{ issue }}</li>
+                      </ul>
+                      <p v-if="!designFeedback.paletteOk" class="design-fb-text muted sm">
+                        Для контраста попробуйте «Тёмная нейтральная» или «Светлая „профи“».
+                      </p>
+                      <p v-if="designFeedback.paletteOk && !designFeedback.layoutOk" class="design-fb-text muted sm">
+                        Цвета в порядке — осталось расставить блоки: контекст → название → описание → цена и кнопка.
+                      </p>
+                    </template>
                   </div>
                 </div>
 
@@ -1093,12 +1288,6 @@ const showAppPreview = ref(false)
   gap: 0.35rem;
 }
 
-.ux-task-left {
-  text-align: left;
-  margin: 0.75rem 0 0.5rem;
-  font-weight: 700;
-}
-
 .preview-placeholder {
   min-height: 200px;
   display: flex;
@@ -1243,22 +1432,6 @@ const showAppPreview = ref(false)
   color: #94a3b8;
 }
 
-.preview-ux .ux-row-out {
-  max-width: 100%;
-}
-
-.preview-ux .ux-label {
-  color: #64748b;
-}
-
-.preview-ux .ux-feedback {
-  color: #475569;
-}
-
-.preview-ux .ux-feedback.ok {
-  color: #15803d;
-}
-
 .milestone {
   text-align: center;
   font-weight: 700;
@@ -1381,6 +1554,14 @@ const showAppPreview = ref(false)
   color: var(--text);
 }
 
+.er-obs-list li {
+  margin-bottom: 0.45rem;
+}
+
+.er-obs-list li:last-child {
+  margin-bottom: 0;
+}
+
 .subh {
   margin: 0 0 0.5rem;
   font-size: 0.95rem;
@@ -1490,186 +1671,356 @@ const showAppPreview = ref(false)
   font-size: 0.85rem;
 }
 
-.ux-dots {
+.design-subh {
+  margin: 1rem 0 0.45rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.design-palettes {
   display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  margin-bottom: 1rem;
+  flex-direction: column;
+  gap: 0.45rem;
 }
 
-.ux-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: none;
+.design-palette-btn {
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   background: var(--surface2);
+  color: var(--text);
+  padding: 0.55rem 0.65rem;
   cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.design-palette-btn:hover {
+  border-color: rgba(91, 140, 255, 0.45);
+}
+
+.design-palette-btn.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(91, 140, 255, 0.18);
+}
+
+.design-palette-name {
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.design-palette-hint {
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.design-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 0.3rem;
+}
+
+.design-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.design-fonts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.design-font-btn {
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--surface2);
+  color: var(--text);
+  padding: 0.5rem 0.65rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.design-font-btn.on {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(91, 140, 255, 0.18);
+}
+
+.design-font-name {
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.design-font-hint {
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.design-feedback {
+  margin-top: 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid transparent;
+}
+
+.design-feedback.ok {
+  border-color: #86efac;
+  background: rgba(22, 163, 74, 0.1);
+}
+
+.design-feedback.bad {
+  border-color: #fecaca;
+  background: rgba(254, 226, 226, 0.35);
+}
+
+.design-fb-title {
+  margin: 0 0 0.45rem;
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: #0f172a;
+}
+
+.design-feedback.bad .design-fb-title {
+  color: #991b1b;
+}
+
+.design-feedback.ok .design-fb-title {
+  color: #14532d;
+}
+
+.design-fb-text {
+  margin: 0;
+  line-height: 1.45;
+  font-size: 0.86rem;
+}
+
+.design-ratios,
+.design-issues {
+  margin: 0.45rem 0 0;
+  padding-left: 1.15rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.design-preview-panel {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.design-micro-hint {
+  margin: 0 0 0.3rem;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  line-height: 1.3;
+}
+
+.design-stack-list {
+  list-style: none;
+  margin: 0 0 0.55rem;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
 }
 
-.ux-dot.on {
-  background: var(--accent);
-  box-shadow: 0 0 10px rgba(91, 140, 255, 0.6);
+.design-stack-row {
+  display: grid;
+  grid-template-columns: 1.25rem 1fr auto;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.22rem 0.38rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
 }
 
-.ux-task {
-  font-weight: 700;
+.design-stack-n {
+  font-size: 0.6rem;
+  font-weight: 900;
+  color: #94a3b8;
   text-align: center;
-  margin: 0 0 1rem;
 }
 
-.ux-row {
+.design-stack-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.25;
+}
+
+.design-stack-actions {
+  display: flex;
+  gap: 0.08rem;
+}
+
+.design-stack-btn {
+  padding: 0.08rem 0.22rem !important;
+  min-width: 1.45rem;
+  font-size: 0.65rem;
+  line-height: 1.2;
+}
+
+.preview-design-tools {
+  min-height: 220px;
+}
+
+.design-out-lead {
+  margin: 0 0 1rem;
+  font-size: 0.86rem;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.design-subh-out {
+  margin-top: 0.55rem;
+  margin-bottom: 0.22rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.design-palettes-out,
+.design-fonts-out {
+  margin-bottom: 0.2rem;
+}
+
+.design-palette-btn-out,
+.design-font-btn-out {
+  border-color: #e2e8f0 !important;
+  background: #f8fafc !important;
+  color: #1e293b !important;
+}
+
+.design-palette-btn-out.on,
+.design-font-btn-out.on {
+  border-color: #5b8cff !important;
+  background: #eff6ff !important;
+}
+
+.design-palette-btn-out .design-palette-hint,
+.design-font-btn-out .design-font-hint {
+  color: #64748b !important;
+}
+
+.design-palettes-compact {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.4rem;
 }
 
-@media (max-width: 600px) {
-  .ux-row {
+@media (max-width: 520px) {
+  .design-palettes-compact {
     grid-template-columns: 1fr;
   }
 }
 
-.ux-panel {
-  border-radius: 12px;
-  padding: 1rem;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.ux-panel.bad {
-  background: #2a1f28;
-}
-
-.ux-panel.good {
-  background: #1a2830;
-}
-
-.ux-label {
-  font-size: 0.8rem;
-  color: var(--muted);
+.design-palette-btn-compact {
   display: block;
-  margin-bottom: 0.75rem;
+  padding: 0.32rem 0.45rem !important;
+  text-align: left;
 }
 
-.fake-ui {
-  min-height: 100px;
-  border-radius: 8px;
+.design-palette-row {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.fake-ui.messy {
-  background: #3d3540;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.fake-ui.clean {
-  background: #243540;
-}
-
-.fake-ui.login-bad {
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.fake-ui.login-good {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.35rem;
-}
-
-.micro {
-  font-size: 0.65rem;
-  color: #888;
-}
-
-.btn-micro {
-  font-size: 0.6rem;
-  padding: 0.15rem 0.35rem;
-}
-
-.lbl {
-  font-size: 0.7rem;
-  color: var(--muted);
-}
-
-.fake-input {
-  height: 22px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.settings-bad {
-  min-height: 72px;
   align-items: flex-start;
-  justify-content: flex-start;
+  gap: 0.4rem;
 }
 
-.nano {
-  font-size: 0.55rem;
-  line-height: 1.2;
-  color: #777;
-  word-break: break-all;
-}
-
-.settings-good {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.5rem;
-}
-
-.set-row {
+.design-palette-btn-compact .design-swatches {
   display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  font-size: 0.8rem;
+  flex-wrap: wrap;
+  gap: 3px;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
 }
 
-.set-h {
-  font-weight: 700;
+.design-swatch-sm {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-.set-d {
-  color: var(--muted);
-  font-size: 0.75rem;
+.design-palette-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.08rem;
 }
 
-.tiny-link {
-  font-size: 0.65rem;
-  color: #888;
-  text-decoration: underline;
+.design-palette-btn-compact .design-palette-name {
+  font-size: 0.74rem !important;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
-.btn-tiny {
-  font-size: 0.7rem;
-  padding: 0.2rem 0.4rem;
+.design-palette-btn-compact .design-palette-hint {
+  font-size: 0.62rem !important;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.btn-cta {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  border: none;
-  color: white;
-  font-weight: 700;
-  padding: 0.65rem 1.25rem;
-  border-radius: 10px;
-  font-size: 0.95rem;
+.design-fonts-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.22rem;
 }
 
-.btn-cta.sm {
-  padding: 0.45rem 0.9rem;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
+.design-font-btn-compact {
+  flex: 1 1 calc(33.333% - 0.18rem);
+  min-width: 4.6rem;
+  padding: 0.22rem 0.32rem !important;
+  border-radius: 8px !important;
+  gap: 0.06rem !important;
 }
 
-.ux-feedback {
-  margin: 0.75rem 0 0;
-  font-size: 0.9rem;
+.design-font-btn-compact .design-font-name {
+  font-size: 0.66rem !important;
+  line-height: 1.2;
+}
+
+.design-font-btn-compact .design-font-hint {
+  font-size: 0.56rem !important;
+  line-height: 1.2;
+}
+
+@media (max-width: 420px) {
+  .design-font-btn-compact {
+    flex: 1 1 100%;
+  }
+}
+
+.design-tools-actions {
+  margin-top: 1rem;
+}
+
+.design-feedback-out {
+  margin-top: 1.1rem;
 }
 
 .quiz-wrap {

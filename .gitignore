@@ -1,2 +1,5 @@
 /node_modules
 /dist
+
+# Локальные ключи и настройки редактора — не в репозиторий
+.vscode/settings.json
