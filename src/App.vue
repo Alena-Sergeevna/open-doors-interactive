@@ -14,6 +14,9 @@ import { DESIGN_PALETTES, DESIGN_FONTS, evaluatePalette, formatRatio } from './d
 import { DOMAIN_OBSERVATIONS } from './data/erDomain.js'
 import { useAlgorithmFlowchart } from './composables/useAlgorithmFlowchart.js'
 
+/** Файлы из public/ с учётом Vite base (GitHub Pages: /repo-name/) */
+const pub = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
+
 /** Единая тема: как из уровней складывается игровое веб/мобильное приложение */
 const FLOW_SCENARIOS = [
   {
@@ -26,7 +29,7 @@ const FLOW_SCENARIOS = [
       g1: {
         type: 'action',
         prompt: 'Что делаем в начале уровня?',
-        image: '/algo/screen.svg',
+        image: pub('algo/screen.svg'),
         imageAlt: 'Игровой экран',
         options: [
           { text: 'Загрузить карту, коллизии и спавн игрока', correct: true, blockLabel: 'Инициализация уровня', next: 'g_cond' },
@@ -37,7 +40,7 @@ const FLOW_SCENARIOS = [
       g_cond: {
         type: 'decision',
         prompt: 'У игрока есть попытка (жизнь / энергия)?',
-        image: '/algo/thermometer.svg',
+        image: pub('algo/thermometer.svg'),
         imageAlt: 'Ресурс',
         branches: [
           { text: 'Да, можно играть', edgeLabel: 'да', next: 'g2' },
@@ -47,7 +50,7 @@ const FLOW_SCENARIOS = [
       g_wait: {
         type: 'action',
         prompt: 'Лимит исчерпан. Что предлагает игра?',
-        image: '/algo/clock.svg',
+        image: pub('algo/clock.svg'),
         imageAlt: 'Таймер / кулдаун',
         options: [
           { text: 'Подождать кулдаун или честно предложить продолжение', correct: true, blockLabel: 'Ожидание / монетизация', next: 'g_cond' },
@@ -58,7 +61,7 @@ const FLOW_SCENARIOS = [
       g2: {
         type: 'action',
         prompt: 'Как завершается успешная попытка?',
-        image: '/algo/cup.svg',
+        image: pub('algo/cup.svg'),
         imageAlt: 'Цель уровня',
         options: [
           { text: 'Выполнить условие победы и зафиксировать счёт', correct: true, blockLabel: 'Победа и запись результата', next: 'g3' },
@@ -69,7 +72,7 @@ const FLOW_SCENARIOS = [
       g3: {
         type: 'action',
         prompt: 'Финал раунда для игрока?',
-        image: '/algo/screen.svg',
+        image: pub('algo/screen.svg'),
         imageAlt: 'Экран результата',
         options: [
           { text: 'Показать награду, таблицу лидеров или следующий уровень', correct: true, blockLabel: 'Экран результата', next: 'end' },
@@ -89,7 +92,7 @@ const FLOW_SCENARIOS = [
       o1: {
         type: 'action',
         prompt: 'Первый шаг игрока для онлайн‑режима?',
-        image: '/algo/bus.svg',
+        image: pub('algo/bus.svg'),
         imageAlt: 'Подключение',
         options: [
           { text: 'Выбрать режим PvP и отправить запрос на подбор', correct: true, blockLabel: 'Запрос в матчмейкинг', next: 'o2' },
@@ -100,7 +103,7 @@ const FLOW_SCENARIOS = [
       o2: {
         type: 'action',
         prompt: 'Что делает клиент после запроса?',
-        image: '/algo/screen.svg',
+        image: pub('algo/screen.svg'),
         imageAlt: 'Ожидание',
         options: [
           { text: 'Ждать ответ сервера со статусом очереди', correct: true, blockLabel: 'Ожидание сервера', next: 'o_cond' },
@@ -111,7 +114,7 @@ const FLOW_SCENARIOS = [
       o_cond: {
         type: 'decision',
         prompt: 'Сервер выдал комнату и соперника?',
-        image: '/algo/clock.svg',
+        image: pub('algo/clock.svg'),
         imageAlt: 'Очередь',
         branches: [
           { text: 'Да, матч готов', edgeLabel: 'да', next: 'o3' },
@@ -121,7 +124,7 @@ const FLOW_SCENARIOS = [
       o_wait: {
         type: 'action',
         prompt: 'Пока нет пары, что корректно?',
-        image: '/algo/clock.svg',
+        image: pub('algo/clock.svg'),
         imageAlt: 'Поиск',
         options: [
           { text: 'Показать таймер / расширить диапазон рейтинга', correct: true, blockLabel: 'Продолжить поиск', next: 'o_cond' },
@@ -132,7 +135,7 @@ const FLOW_SCENARIOS = [
       o3: {
         type: 'action',
         prompt: 'Что происходит перед стартом боя?',
-        image: '/algo/screen.svg',
+        image: pub('algo/screen.svg'),
         imageAlt: 'Арена',
         options: [
           { text: 'Загрузить сцену, синхронизировать стартовые состояния', correct: true, blockLabel: 'Старт матча', next: 'end' },
@@ -152,7 +155,7 @@ const FLOW_SCENARIOS = [
       c1: {
         type: 'action',
         prompt: 'Клиент прислал файл сохранения. Первый шаг сервера?',
-        image: '/algo/lock.svg',
+        image: pub('algo/lock.svg'),
         imageAlt: 'Проверка',
         options: [
           { text: 'Проверить токен игрока и целостность данных', correct: true, blockLabel: 'Валидация запроса', next: 'c_cond' },
@@ -163,7 +166,7 @@ const FLOW_SCENARIOS = [
       c_cond: {
         type: 'decision',
         prompt: 'Версия на сервере новее или совпадает?',
-        image: '/algo/lock.svg',
+        image: pub('algo/lock.svg'),
         imageAlt: 'Версии',
         branches: [
           { text: 'Да, конфликта нет', edgeLabel: 'да', next: 'c_ok' },
@@ -173,7 +176,7 @@ const FLOW_SCENARIOS = [
       c_ok: {
         type: 'action',
         prompt: 'Конфликта нет. Что сделать?',
-        image: '/algo/screen.svg',
+        image: pub('algo/screen.svg'),
         imageAlt: 'OK',
         options: [
           { text: 'Сохранить в БД и вернуть подтверждение клиенту', correct: true, blockLabel: 'Запись в облако', next: 'c_ui' },
@@ -184,7 +187,7 @@ const FLOW_SCENARIOS = [
       c_merge: {
         type: 'action',
         prompt: 'При конфликте версий что предложить?',
-        image: '/algo/screen.svg',
+        image: pub('algo/screen.svg'),
         imageAlt: 'Выбор',
         options: [
           { text: 'Показать выбор: сервер / локально / объединить', correct: true, blockLabel: 'Разрешение конфликта', next: 'c_ui' },
@@ -195,7 +198,7 @@ const FLOW_SCENARIOS = [
       c_ui: {
         type: 'action',
         prompt: 'Что видит игрок после успешного ответа?',
-        image: '/algo/screen.svg',
+        image: pub('algo/screen.svg'),
         imageAlt: 'UI',
         options: [
           { text: 'Иконка «облако синхронизировано» или дата последнего сейва', correct: true, blockLabel: 'Подтверждение в UI', next: 'end' },
