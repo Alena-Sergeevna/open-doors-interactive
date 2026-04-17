@@ -202,7 +202,7 @@ const copy = computed(() =>
         reqLine2: '«Покажи страницу»',
         resLine1: 'ОТВЕТ',
         resLine2: '«Вот страница»',
-        bar: 'школа.пример/…',
+        bar: 'game.example.com/…',
         www: 'ИНТЕРНЕТ',
         server: 'КОМПЬЮТЕР С САЙТОМ',
         result: 'Страница готова!',

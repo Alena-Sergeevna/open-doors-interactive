@@ -17,6 +17,18 @@ import { useAlgorithmFlowchart } from './composables/useAlgorithmFlowchart.js'
 /** Файлы из public/ с учётом Vite base (GitHub Pages: /repo-name/) */
 const pub = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\//, '')}`
 
+/** Правая панель на экране «Старт»: представление специальности */
+const INTRO_PRESENT = {
+  org: 'Государственное бюджетное профессиональное образовательное учреждение Иркутской области «Иркутский авиационный техникум»',
+  code: '09.02.11',
+  specialtyTitle: 'Разработка и управление программным обеспечением',
+  duration: '3 года 10 месяцев',
+  qualification: 'Программист',
+  direction: 'Веб-разработка',
+  entryBasis: 'Набор на базе 9 классов',
+  entryBasisDetail: 'Основное общее образование',
+}
+
 /** Единая тема: как из уровней складывается игровое веб/мобильное приложение */
 const FLOW_SCENARIOS = [
   {
@@ -254,13 +266,13 @@ const STAGES = [
     kind: 'intro',
     title: 'Старт',
     emoji: '👋',
-    lead: 'За несколько минут вы пройдёте путь разработки игрового приложения — от логики уровня до сети, данных и выкладки в магазины. Всё можно проходить самостоятельно на экране.',
+    lead: 'За несколько минут вы пройдёте путь разработки игрового приложения — от логики уровня до сети, данных и публикации.',
     bullets: [
       'Игры — это и интерфейс, и сеть, и сервер, который хранит прогресс и честность матчей.',
-      'Те же идеи: алгоритмы, клиент‑сервер, БД, проектирование сценариев, проверки перед релизом и выкладка.',
-      'Ниже — 9 уровней с примерами и мини‑задачами.',
+      'Те же идеи: алгоритмы, клиент‑сервер, БД, проектирование сценариев, проверки перед релизом и публикация.',
+      'Дальше — 9 уровней с примерами и мини‑задачами.',
     ],
-    cta: 'Начать 9 уровней',
+    cta: 'Начать прохождение уровней',
   },
   {
     id: 'l1',
@@ -304,7 +316,7 @@ const STAGES = [
     goal: 'Путь игрока',
     context: [
       'До кода описывают сценарии: от запуска до цели — уровень пройден, матч сыгран, квест сдан.',
-      'Потребности игроков выясняют плейтестами, опросами, метриками воронки.',
+      'Понимают, чего хотят игроки: дают поиграть в раннюю версию, собирают отзывы и смотрят, сколько людей доходит до следующего шага (например, до регистрации или покупки).',
     ],
     examples: [
       'Аркада: запуск → выбор режима → раунд → таблица рекордов.',
@@ -449,6 +461,14 @@ const STAGES = [
     specialtyName: 'Разработка и управление программным обеспечением',
   },
 ]
+
+/** Цепочка уровней для схемы на экране «Финал» */
+const LEVEL_CHAIN = STAGES.filter((s) => s.kind === 'level').map((s) => ({
+  id: s.id,
+  level: s.level,
+  title: s.title,
+  emoji: s.emoji,
+}))
 
 /** Всего игровых уровней (без вступления и финала) */
 const TOTAL_LEVELS = 9
@@ -604,6 +624,7 @@ function pickQuiz(qIndex, opt, item) {
 }
 
 watch(stageIndex, (i) => {
+  resetFinaleDemo()
   const id = STAGES[i]?.id
   if (id === 'l3') rebuildPathShuffle()
   if (id === 'l4') resetDesignStudio()
@@ -619,7 +640,38 @@ function prev() {
   if (stageIndex.value > 0) stageIndex.value--
 }
 
-const showAppPreview = ref(false)
+const finaleHighlight = ref(0)
+const finalePlaying = ref(false)
+const finaleComplete = ref(false)
+let finaleRunToken = 0
+
+function resetFinaleDemo() {
+  finaleRunToken++
+  finaleHighlight.value = 0
+  finalePlaying.value = false
+  finaleComplete.value = false
+}
+
+function playFinaleDemo() {
+  resetFinaleDemo()
+  const token = finaleRunToken
+  finalePlaying.value = true
+  let n = 0
+  const stepMs = 520
+  const kickMs = 380
+  const tick = () => {
+    if (token !== finaleRunToken) return
+    n += 1
+    finaleHighlight.value = n
+    if (n < TOTAL_LEVELS) {
+      setTimeout(tick, stepMs)
+    } else {
+      finalePlaying.value = false
+      finaleComplete.value = true
+    }
+  }
+  setTimeout(tick, kickMs)
+}
 </script>
 
 <template>
@@ -870,9 +922,9 @@ const showAppPreview = ref(false)
                   <span class="spec-code">{{ stage.specialty }}</span>
                   <p class="spec-name">{{ stage.specialtyName }}</p>
                 </div>
-                <button type="button" class="btn secondary" @click="showAppPreview = !showAppPreview">
-                  {{ showAppPreview ? 'Скрыть схему справа' : 'Показать схему справа' }}
-                </button>
+                <p class="hint sm finale-hint">
+                  Справа — схема всех {{ TOTAL_LEVELS }} уровней. Нажмите «Запуск», чтобы по шагам пройти цепочку от первого уровня к последнему.
+                </p>
               </template>
 
               <nav class="nav">
@@ -903,15 +955,61 @@ const showAppPreview = ref(false)
                           ? 'Проверки'
                           : stage.kind === 'level' && stage.interactive === 'deployLab'
                             ? 'Релиз'
-                            : 'Просмотр'
+                            : stage.kind === 'finale'
+                              ? 'Схема уровней'
+                              : 'Просмотр'
               }}</span>
             </div>
             <div class="pane-out-scroll">
               <template v-if="stage.kind === 'intro'">
-                <div class="preview-placeholder">
-                  <span class="preview-run-icon" aria-hidden="true">▶</span>
-                  <p class="preview-placeholder-title">Готово к запуску</p>
-                  <p class="preview-placeholder-text">Нажмите «Далее» — в этой панели будет отображаться результат шагов уровня.</p>
+                <div class="intro-present" role="region" aria-label="Специальность и учебное заведение">
+                  <div class="intro-present__mesh" aria-hidden="true" />
+                  <div class="intro-present__inner">
+                    <div class="intro-present__brand intro-present__reveal" :style="{ '--ip-i': 0 }">
+                      <img
+                        class="intro-present__logo"
+                        :src="pub('irkat_logo.svg')"
+                        width="88"
+                        height="86"
+                        alt="Логотип Иркутского авиационного техникума"
+                        decoding="async"
+                      />
+                      <p class="intro-present__org">{{ INTRO_PRESENT.org }}</p>
+                    </div>
+                    <div class="intro-present__hero intro-present__reveal" :style="{ '--ip-i': 1 }">
+                      <span class="intro-present__badge">{{ INTRO_PRESENT.code }}</span>
+                      <h2 class="intro-present__spec">{{ INTRO_PRESENT.specialtyTitle }}</h2>
+                    </div>
+                    <div class="intro-present__grid" aria-label="Ключевые сведения">
+                      <article class="intro-present__tile intro-present__reveal" :style="{ '--ip-i': 2 }">
+                        <span class="intro-present__tile-ic" aria-hidden="true">⏱</span>
+                        <h3 class="intro-present__tile-k">Срок обучения</h3>
+                        <p class="intro-present__tile-v">{{ INTRO_PRESENT.duration }}</p>
+                      </article>
+                      <article
+                        class="intro-present__tile intro-present__tile--entry intro-present__reveal"
+                        :style="{ '--ip-i': 3 }"
+                      >
+                        <span class="intro-present__tile-ic" aria-hidden="true">🎓</span>
+                        <h3 class="intro-present__tile-k">Условия поступления</h3>
+                        <p class="intro-present__tile-v">{{ INTRO_PRESENT.entryBasis }}</p>
+                        <p class="intro-present__tile-sub">{{ INTRO_PRESENT.entryBasisDetail }}</p>
+                      </article>
+                      <article class="intro-present__tile intro-present__reveal" :style="{ '--ip-i': 4 }">
+                        <span class="intro-present__tile-ic" aria-hidden="true">💻</span>
+                        <h3 class="intro-present__tile-k">Квалификация</h3>
+                        <p class="intro-present__tile-v">{{ INTRO_PRESENT.qualification }}</p>
+                      </article>
+                      <article class="intro-present__tile intro-present__reveal" :style="{ '--ip-i': 5 }">
+                        <span class="intro-present__tile-ic" aria-hidden="true">🌐</span>
+                        <h3 class="intro-present__tile-k">Направление</h3>
+                        <p class="intro-present__tile-v">{{ INTRO_PRESENT.direction }}</p>
+                      </article>
+                    </div>
+                    <p class="intro-present__hint intro-present__reveal" :style="{ '--ip-i': 7 }">
+                      Нажмите «Далее» — здесь по ходу уровней будет появляться результат ваших шагов.
+                    </p>
+                  </div>
                 </div>
               </template>
 
@@ -1084,18 +1182,48 @@ const showAppPreview = ref(false)
                 </div>
               </template>
 
-              <template v-else>
-                <div v-if="showAppPreview" class="app-scheme app-scheme-out">
-                  <div class="scheme-layer client-layer">Клиент игры</div>
-                  <div class="scheme-arrows">⇄</div>
-                  <div class="scheme-layer server-layer">
-                    Игровой backend + БД
-                    <span class="scheme-note">матчи · прогресс · экономика</span>
+              <template v-else-if="stage.kind === 'finale'">
+                <div class="finale-map" aria-label="Схема прохождения всех уровней">
+                  <p class="finale-map-lead">
+                    Все этапы подряд: от алгоритмов и сети до тестов и публикации.
+                  </p>
+                  <div class="finale-map-actions">
+                    <button type="button" class="btn primary" :disabled="finalePlaying" @click="playFinaleDemo">
+                      {{ finalePlaying ? 'Показ…' : 'Запуск' }}
+                    </button>
+                    <button type="button" class="btn ghost" @click="resetFinaleDemo">Сброс</button>
                   </div>
-                  <div class="scheme-deploy">Патчи · сторы · мониторинг</div>
+                  <ol class="finale-track">
+                    <template v-for="(step, idx) in LEVEL_CHAIN" :key="step.id">
+                      <li
+                        class="finale-node"
+                        :class="{
+                          'finale-node--done': finaleComplete || finaleHighlight > step.level,
+                          'finale-node--current': !finaleComplete && finaleHighlight === step.level,
+                        }"
+                        :style="{ '--step': step.level }"
+                      >
+                        <span class="finale-node__badge" aria-hidden="true">{{ step.level }}</span>
+                        <span class="finale-node__emoji" aria-hidden="true">{{ step.emoji }}</span>
+                        <span class="finale-node__body">
+                          <span class="finale-node__title">{{ step.title }}</span>
+                          <span class="finale-node__meta">Уровень {{ step.level }} из {{ TOTAL_LEVELS }}</span>
+                        </span>
+                      </li>
+                      <li
+                        v-if="idx < LEVEL_CHAIN.length - 1"
+                        class="finale-connector"
+                        :style="{ '--conn-step': idx + 1 }"
+                        aria-hidden="true"
+                      />
+                    </template>
+                  </ol>
                 </div>
-                <div v-else class="preview-placeholder preview-placeholder--subtle">
-                  <p class="preview-placeholder-text">Включите схему кнопкой слева — она появится здесь.</p>
+              </template>
+
+              <template v-else>
+                <div class="preview-placeholder preview-placeholder--subtle">
+                  <p class="preview-placeholder-text">Выберите этап слева.</p>
                 </div>
               </template>
             </div>
@@ -1330,6 +1458,235 @@ const showAppPreview = ref(false)
   line-height: 1.5;
   color: #64748b;
   max-width: 320px;
+}
+
+.intro-present {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 18px 40px rgba(15, 23, 42, 0.08);
+  text-align: left;
+  max-width: 100%;
+  background: #0f172a;
+}
+
+.intro-present__mesh {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 80% at 0% 0%, rgba(91, 140, 255, 0.35), transparent 55%),
+    radial-gradient(90% 70% at 100% 10%, rgba(129, 140, 248, 0.32), transparent 50%),
+    radial-gradient(80% 60% at 50% 100%, rgba(56, 189, 248, 0.12), transparent 45%);
+  opacity: 0.95;
+  animation: introPresentMesh 14s ease-in-out infinite alternate;
+}
+
+@keyframes introPresentMesh {
+  0% {
+    transform: translate(0, 0) scale(1);
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    transform: translate(2%, -1%) scale(1.03);
+    filter: hue-rotate(12deg);
+  }
+}
+
+.intro-present__inner {
+  position: relative;
+  z-index: 1;
+  padding: 1.25rem 1.2rem 1.45rem;
+  background: linear-gradient(180deg, rgba(248, 250, 252, 0.97) 0%, rgba(241, 245, 249, 0.98) 55%, rgba(238, 242, 255, 0.94) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.intro-present__brand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.9rem;
+  width: fit-content;
+  max-width: min(25.5rem, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.95);
+}
+
+.intro-present__logo {
+  width: 4.75rem;
+  height: auto;
+  flex-shrink: 0;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 14px rgba(0, 139, 208, 0.22));
+}
+
+.intro-present__org {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: min(17.25rem, 100%);
+  font-size: 0.74rem;
+  line-height: 1.48;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.01em;
+  text-align: left;
+}
+
+.intro-present__hero {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.65rem 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.intro-present__badge {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+}
+
+.intro-present__spec {
+  margin: 0;
+  flex: 1 1 12rem;
+  min-width: 0;
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.32;
+  color: #0f172a;
+}
+
+.intro-present__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.intro-present__tile {
+  margin: 0;
+  padding: 0.75rem 0.8rem 0.8rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.intro-present__tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(59, 130, 246, 0.12);
+  border-color: rgba(191, 219, 254, 0.9);
+}
+
+.intro-present__tile--entry {
+  grid-column: 1 / -1;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(238, 242, 255, 0.88) 100%);
+  border: 1px solid rgba(165, 180, 252, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset,
+    0 8px 22px rgba(99, 102, 241, 0.12);
+}
+
+.intro-present__tile-ic {
+  display: block;
+  font-size: 1.15rem;
+  line-height: 1;
+  margin-bottom: 0.4rem;
+  filter: grayscale(0.15);
+}
+
+.intro-present__tile-k {
+  margin: 0 0 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #64748b;
+}
+
+.intro-present__tile-v {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.intro-present__tile--entry .intro-present__tile-v {
+  font-size: 0.95rem;
+  color: #312e81;
+}
+
+.intro-present__tile-sub {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6366f1;
+  line-height: 1.35;
+}
+
+.intro-present__hint {
+  margin: 1rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px dashed rgba(148, 163, 184, 0.55);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: #64748b;
+}
+
+.intro-present__reveal {
+  opacity: 0;
+  transform: translateY(16px) scale(0.98);
+  animation: introPresentIn 0.68s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: calc(0.06s + var(--ip-i, 0) * 0.1s);
+}
+
+@keyframes introPresentIn {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-present__mesh {
+    animation: none;
+  }
+
+  .intro-present__reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .intro-present__tile:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .intro-present__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .intro-present__tile--entry {
+    grid-column: 1;
+  }
 }
 
 .preview-section-title {
@@ -2108,6 +2465,163 @@ const showAppPreview = ref(false)
 .finale-q {
   margin: 1.25rem 0;
   font-size: 1.15rem;
+}
+
+.finale-hint {
+  margin-top: 0.35rem;
+}
+
+.finale-map {
+  padding: 0.35rem 0 0.5rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.finale-map-lead {
+  margin: 0 0 0.85rem;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.finale-map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.finale-track {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-width: 100%;
+  --finale-stair: 0.72rem;
+}
+
+.finale-node {
+  --step: 1;
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.65rem;
+  row-gap: 0.12rem;
+  align-items: center;
+  box-sizing: border-box;
+  margin: 0;
+  margin-inline-start: calc((var(--step) - 1) * var(--finale-stair));
+  width: calc(100% - (var(--step) - 1) * var(--finale-stair));
+  max-width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 11px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  overflow: hidden;
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.finale-node__badge {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #64748b;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.finale-node__emoji {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.finale-node__body {
+  grid-column: 2;
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.finale-node__title {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: #0f172a;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+.finale-node__meta {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #94a3b8;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.finale-node--done {
+  background: #ecfdf5;
+  border-color: #bbf7d0;
+}
+
+.finale-node--done .finale-node__badge {
+  color: #166534;
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.finale-node--current {
+  border-color: #5b8cff;
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+  box-shadow: 0 0 0 1px rgba(91, 140, 255, 0.2), 0 10px 26px rgba(59, 130, 246, 0.12);
+}
+
+.finale-node--current .finale-node__badge {
+  color: #fff;
+  background: linear-gradient(145deg, #3b82f6, #6366f1);
+  border-color: transparent;
+}
+
+.finale-connector {
+  --conn-step: 1;
+  list-style: none;
+  height: 0.55rem;
+  width: 2px;
+  margin: 0;
+  margin-inline-start: calc((var(--conn-step) - 0.5) * var(--finale-stair) + 1.05rem);
+  align-self: flex-start;
+  background: linear-gradient(180deg, #cbd5e1, #e2e8f0);
+  border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finale-node {
+    transition: none;
+  }
 }
 
 .specialty-block {
